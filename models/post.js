@@ -9,7 +9,7 @@ var PostSchema = new Schema({
   content: { type: String, required: true },
   timestamp: { type: Date, required: true },
   published: { type: Boolean, required: true },
-  comments: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 PostSchema.virtual("formatted_time").get(function () {
