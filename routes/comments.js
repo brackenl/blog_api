@@ -48,7 +48,10 @@ router.delete("/:commentId", async (req, res, next) => {
     if (err) {
       console.log(err);
     }
-    if (comment.user == req.payload.id) {
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+    if (comment.user._id == req.payload.id) {
       Comment.findByIdAndDelete(req.params.commentId, (err, deletedComment) => {
         if (err) {
           console.log(err);

@@ -4,12 +4,7 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-// const jwt = require("jsonwebtoken");
-// const passport = require("passport");
-// const jwtStrategy = require("./strategies/jwt");
-// require("./passport");
-
-// passport.use(jwtStrategy);
+var cors = require("cors");
 
 var Post = require("./models/post");
 var Comment = require("./models/comment");
@@ -34,6 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(cors());
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);

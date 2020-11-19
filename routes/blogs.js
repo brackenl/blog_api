@@ -1,6 +1,8 @@
 var express = require("express");
 var router = express.Router();
 
+const { body, check, validationResult } = require("express-validator");
+
 const passport = require("passport");
 const jwtStrategy = require("../strategies/jwt");
 passport.use(jwtStrategy);
@@ -14,23 +16,34 @@ var commentRouter = require("./comments");
 /* Comment routes */
 router.use("/:id/comments", commentRouter);
 
-router.use(getTokenData);
+// router.use(getTokenData);
 
 /* GET all blogs. */
 router.get("/", (req, res, next) => {
-  Post.find({}).exec((err, posts) => {
-    if (err) {
-      console.log(err);
-    } else {
-      return res.json(posts);
-    }
-  });
+  console.log(req.headers);
+  Post.find({})
+    .populate("author")
+    .exec((err, posts) => {
+      if (err) {
+        console.log(err);
+      } else {
+        return res.json(posts);
+      }
+    });
 });
 
 /* GET specific blog. */
 router.get("/:id", (req, res, next) => {
   Post.findById(req.params.id)
-    .populate("comments")
+    .populate("author")
+    .populate({
+      path: "comments",
+      model: "Comment",
+      populate: {
+        path: "user",
+        model: "User",
+      },
+    })
     .exec((err, post) => {
       if (err) {
         console.log(err);
@@ -44,8 +57,17 @@ router.get("/:id", (req, res, next) => {
 router.post(
   "/",
   passport.authenticate("jwt", { session: false }),
+  getTokenData,
+
+  body("title", "Title required").trim().isLength({ min: 1 }).escape(),
+  body("content", "Content required").trim().isLength({ min: 1 }).escape(),
+
   (req, res, next) => {
-    // UPDATE RE AUTHENTICATION
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.json({ errors: errors.array() });
+    }
 
     const { title, content } = req.body;
     const newBlog = new Post({
@@ -69,6 +91,7 @@ router.post(
 router.put(
   "/:id",
   passport.authenticate("jwt", { session: false }),
+  getTokenData,
   (req, res, next) => {
     const { title, content } = req.body;
 
@@ -95,6 +118,7 @@ router.put(
 router.delete(
   "/:id",
   passport.authenticate("jwt", { session: false }),
+  getTokenData,
   (req, res, next) => {
     Post.findById(req.params.id, (err, post) => {
       if (post.author == req.payload.id) {
