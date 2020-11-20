@@ -35,7 +35,7 @@ app.use(helmet());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   cors({
-    origin: "https://agile-headland-88411.herokuapp.com",
+    origin: "https://brackenl.github.io",
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   })
 );
