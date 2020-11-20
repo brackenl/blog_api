@@ -7,6 +7,7 @@ var getTokenData = require("../utils/getTokenData");
 
 var Comment = require("../models/comment");
 var Post = require("../models/post");
+var User = require("../models/user");
 
 router.use(passport.authenticate("jwt", { session: false }));
 router.use(getTokenData);
@@ -35,11 +36,50 @@ router.post("/", (req, res, next) => {
           if (err) {
             console.log(err);
           }
-          res.json(comment);
+          User.findById(comment.user, (err, user) => {
+            if (err) {
+              console.log(err);
+            }
+            comment.user = user;
+            return res.json(comment);
+          });
         });
       });
     }
   });
+});
+
+/* PUT update comment */
+router.put("/:commentId", (req, res, next) => {
+  const { comment } = req.body;
+
+  Comment.findById(req.params.commentId)
+    .populate("user")
+    .exec((err, relComment) => {
+      if (err) {
+        console.log(err);
+      }
+
+      if (!relComment) {
+        return res.json({ message: "Comment not found" });
+      }
+
+      if (relComment.user._id == req.payload.id) {
+        (relComment.comment = comment),
+          (relComment.edited = true),
+          (relComment.editedTimestamp = new Date()),
+          relComment.save((err, data) => {
+            if (err) {
+              console.log(err);
+            }
+            return res.json(data);
+          });
+      } else {
+        return res
+          .status(401)
+          .json({ message: "You may only edit your own posts" });
+      }
+    });
 });
 
 /* DELETE new comment */

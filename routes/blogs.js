@@ -20,7 +20,6 @@ router.use("/:id/comments", commentRouter);
 
 /* GET all blogs. */
 router.get("/", (req, res, next) => {
-  console.log(req.headers);
   Post.find({})
     .populate("author")
     .exec((err, posts) => {
@@ -48,7 +47,11 @@ router.get("/:id", (req, res, next) => {
       if (err) {
         console.log(err);
       } else {
-        return res.json(post);
+        if (post.published) {
+          return res.json(post);
+        } else {
+          return res.status(404).send();
+        }
       }
     });
 });
@@ -75,7 +78,7 @@ router.post(
       title: title,
       content: content,
       timestamp: new Date(),
-      published: true,
+      published: false,
       comments: [],
     });
     newBlog.save((err, data) => {
@@ -93,12 +96,13 @@ router.put(
   passport.authenticate("jwt", { session: false }),
   getTokenData,
   (req, res, next) => {
-    const { title, content } = req.body;
+    const { title, content, published } = req.body;
 
     Post.findById(req.params.id, (err, post) => {
       if (post.author == req.payload.id) {
         post.title = title;
         post.content = content;
+        post.published = published;
         post.save((err, data) => {
           if (err) {
             console.log(err);

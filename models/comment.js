@@ -8,6 +8,8 @@ var CommentSchema = new Schema({
   comment: { type: String, required: true, maxlength: 300 },
   timestamp: { type: Date, required: true },
   post: { type: Schema.Types.ObjectId, ref: "Post" },
+  edited: { type: Boolean, required: false },
+  editedTimestamp: { type: Date, required: false },
 });
 
 CommentSchema.virtual("formatted_time").get(function () {
