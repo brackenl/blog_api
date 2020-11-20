@@ -5,6 +5,8 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
+var compression = require("compression");
+var helmet = require("helmet");
 
 var Post = require("./models/post");
 var Comment = require("./models/comment");
@@ -28,8 +30,15 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(compression());
+app.use(helmet());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  })
+);
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
